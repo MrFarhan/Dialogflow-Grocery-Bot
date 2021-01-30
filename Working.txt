@@ -1,0 +1,1 @@
+Sample for creating entity via API : https://github.com/dialogflow/city-streets-trivia-nodejs
