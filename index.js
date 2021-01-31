@@ -6,88 +6,151 @@ const { GoogleSpreadsheet } = require("google-spreadsheet");
 const service = require("./credentials.json");
 const doc = new GoogleSpreadsheet(service.api_key);
 const dialogflow = require('dialogflow');
-// Enables debugging statements from the dialogflow-fulfillment library.
 process.env.DEBUG = 'dialogflow:debug';
 var port = process.env.PORT || 3000;
 const client = new dialogflow.SessionEntityTypesClient({
     keyFilename: "./credentials.json"
 });
 
-const productData = [
-    // https://dialogflow.com/docs/reference/api-v2/rest/Shared.Types/BatchUpdateEntityTypesResponse#entity
-    { value: 'Wall Street', synonyms: ['Wall Street'] },
-    { value: 'Fifth Avenue', synonyms: ['Fifth Avenue', '5th Avenue', '5th'] },
-    { value: 'Broadway', synonyms: ['Broadway'] },
-]
+// productData.Quantity.items
+// const productData = {
+//     'Fruit_Vegetables': {
+//         trivia: {
+//             question1: 'kindly provide the quantity in KGs',
+//         },
+//         items: [
+//             { value: 'Apple', synonyms: ['apple'] },
+//             { value: 'Mango', synonyms: ['mango'] },
+//             { value: 'Orange', synonyms: ['Orange'] },
+//             { value: 'I want seafood', synonyms: ['Seafood'] },
+//         ],
+//     },
+//     'Deli': {
+//         trivia: {
+//             question: 'kindly provide the quantity and brand name if any you want',
+//             question2: 'kindly provide brand you want',
+//         },
+//         items: [
+//             { value: 'Deli', synonyms: ['Deli'] },
+//         ],
+//     },
+//     'Dairy': {
+//         trivia: {
+//             question: 'kindly provide the quantity in Pcs',
+//         },
+//         items: [
+//             { value: 'Milk', synonyms: ['Milk'] },
+//             { value: 'Yogurt ', synonyms: ['Yogurt'] }],
+//     },
+//     'Seafood': {
+//         trivia: {
+//             question: 'kindly provide brand, type, Size, Quantity and Flavor',
+//         },
+//         items: [
+//             { value: 'Fish', synonyms: ['Fish'] },
+//             { value: 'Prowns ', synonyms: ['Prowns'] }],
+//     },
+//     'Meat_Poultry': {
+//         trivia: {
+//             question: 'kindly provide the quantity',
+//         },
+//         items: [
+//             { value: 'Meat', synonyms: ['meat'] },
+//             { value: 'Beef', synonyms: ['Beef'] }
+//         ],
+//     },
+//     'Chocolates': {
+//         trivia: {
+//             question: 'kindly provide the quantity',
+//         },
+//         items: [
+//             { value: 'Dairy Milk', synonyms: ['Dairy Milk'] },
+//             { value: 'Munch ', synonyms: ['Munch'] },
+//             { value: 'Crunch', synonyms: ['Crunch'] }],
+//     }
+// };
+
+
+let DBdata = {
+    beverages: ["beverages", "code", "sting", "dew"],
+    Fruit_Vegetables: ["Fruit_Vegetables", "mango", "banana", "orange"],
+    Deli: ["Deli"],
+    Dairy: ["Dairy", "Milk", "Yougert"]
+}
+
+// console.log(Object.values(DBdata))
+let data = []
+let dum = Object.values(DBdata)
+// console.log('dum', dum)
+// const h = dum.map((val, i) => {
+//     const n = val.map((res) => res)
+//     if(n)
+//     data.push(n)
+//     console.log("n", n)
+// }
+// )
+// console.log('h', data)
+let arr=dum.map((item, index) => {
+    // console.log(item)
+    //     let dus = []
+    //    dus = dus.concat(item)
+    //     console.log(dus)
+    // console.log("item is: ", item, "index is :", index)
+    // item.map((singleitem, index) => {
+    //     console.log("single item is: ", singleitem, "index is :", index, "item 0 index is: ", item[0])
+    // })
+    item.map((name, i) => {
+        let value = item[i + 1]
+        let synonyms = [item[i + 1]]
+        if (value)  data.push({
+            value: value,
+            synonyms: synonyms // synonyms looks like: ["geo fence group", "1", "1st", "first"]
+        })
+    })
+})
+
+console.log("arr : ",data)
+// convert each single item into 
+function senti(item) {
+
+    //  data
+    let dummy = []
+    let temp = Object.values(data)
+    // dummy = dummy.push(temp)
+    //  let dumy = temp.push(temp)
+    //  console.log(dumy)
+    // temp = temp.push(data)
+    // console.log("temp is :", dummy);
+    console.log(temp)
+}
+
+// console.log("dum is ", dum)
+// const productData = [
+//     // https://dialogflow.com/docs/reference/api-v2/rest/Shared.Types/BatchUpdateEntityTypesResponse#entity
+//     { value: 'fruits and vegitables', synonyms: ['fruits'] },
+//     { value: 'Deli ', synonyms: ['Deli'] },
+//     { value: 'Eggs', synonyms: ['Eggs'] },
+//     { value: 'Dairy', synonyms: ['Dairy'] },
+//     { value: 'I want seafood', synonyms: ['Seafood'] },
+// ]
 
 app.get("/", (request, response) => {
     response.send("Hello!");
 });
 
+
+
 app.post("/webhook", (request, response) => {
     const _agent = new WebhookClient({ request, response });
     // let queryText = request.body.queryResult.queryText;
-    console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
-    console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
+    // console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
+    // console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
 
-
-
-    /** Create a function that will handle our
-         * 'City name' intent being matched.
-         * @param {agent} agent Passed in by the Dialogflow fulfillment library.
-         * @return {null} */
-    function category(agent) {
-        // Grab the name of the city from the parameters.
-        const brand = agent.parameters;
-        console.log("inside category")
-        // Look up data for this city from our datastore. In a production
-        // agent, we could make a database or API call to do this.
-
-    }
-
-    /** Create a function that will handle our
-     * 'Trivia answer' intent being matched.
-     // * @param {agent} agent Passed in by the Dialogflow fulfillment library. */
-    // function checkTriviaAnswer(agent) {
-    //   // Grab the name of the city from the context.
-    //   const context = agent.context.get('cityname-followup');
-    //   const cityName = context.parameters ? context.parameters.city : undefined;
-
-    //   // If we couldn't find the correct context, log an error and inform the
-    //   // user. This should not happen if the agent is correctly configured.
-    //   if (!context || !cityName) {
-    //     console.error('Expected context or parameter was not present');
-    //     agent.add(`I'm sorry, I forgot which city we're talking about!`);
-    //     agent.add(`Would you like me to ask you about New York, LA, Chicago, or Houston?`);
-    //     return;
-    //   }
-    //   // Grab the name of the street from parameters.
-    //   const streetName = agent.parameters['street'];
-
-    //   // Look up data for this city from our datastore. In a production
-    //   // agent, we could make a database or API call to do this.
-    //   const data = productData[cityName];
-
-    //   // Determine if we got it right!
-    //   if (data.trivia.answer === streetName) {
-    //     agent.add(`Nice work! You got the answer right. You're truly an expert on ${cityName}.`);
-    //     agent.add(`Give me another city and I'll ask you more questions.`);
-    //     // Since they got it right, delete the cityname-followup context
-    //     // so our agent does not expect to hear any more streets.
-    //     agent.context.delete('cityname-followup');
-    //   } else {
-    //     agent.add(`Oops, ${streetName} isn't the right street! Try another street name...`);
-    //   }
-    // }
-
-
-
-
+    const data = DBdata;
     function Welcome(agent) {
-        agent.add(
-            "Hi, welcome intent from webhook triggered"
-        );
-        const data = productData;
+        // agent.add(
+        //     "Hi, welcome intent from webhook triggered"
+        // );
         // Create a new SessionEntityTypesClient, which communicates with the SessionEntityTypes API endpoints. 
         const client = new dialogflow.SessionEntityTypesClient({
             keyFilename: "./credentials.json"
@@ -123,57 +186,65 @@ app.post("/webhook", (request, response) => {
                 console.log('Successfully created session entity type:',
                     JSON.stringify(request));
                 // Respond to the user and ask this city's trivia question
-                agent.add(`Great! Kindly provide varients about ${brand}. i.e size, brand etc`);
+                agent.add(`Hi, welcome intent from webhook triggered`);
             })
             // Handle any errors by apologizing to the user.
             .catch((err) => {
                 console.error('Error creating session entitytype: ', err);
-                // agent.add(`I'm sorry, I'm having trouble remembering that city.`);
+                agent.add(`I'm sorry, I can't get it .`);
                 // agent.add(`Is there a different city you'd like to be quizzed on?`);
             });
     }
 
+    /** Create a function that will handle our
+     * 'City name' intent being matched.
+     * @param {agent} agent Passed in by the Dialogflow fulfillment library.
+     * @return {null} */
+    function category(agent) {
+        const test = agent.parameters.test;
+
+
+        let DBdata = {
+            beverages: ["beverages", "code", "sting", "dew"],
+            Fruit_Vegetables: ["Fruit_Vegetables", "mango", "banana", "orange"],
+            Deli: ["Deli"],
+            Dairy: ["Milk", "Yougert"]
+        }
+
+
+        // Grab the name of the city from the parameters.
+        if (test === "fruits and vegitables")
+            agent.add("You have selected fruits, kindly provide the quantity you want")
+        else agent.add("kindly select a valid product")
+        console.log("brand   is : ", test)
+    }
+
+    /** Create a function that will handle our
+     * 'Trivia answer' intent being matched.
+     // * @param {agent} agent Passed in by the Dialogflow fulfillment library. */
+
+
+
     async function check_out(agent) {
-        // console.log("request . body is : ", request.body)
         const name = request.body.queryResult.parameters.person.name
         const email = request.body.queryResult.parameters.email
         const number = request.body.queryResult.parameters.phoneNumber
         const address = request.body.queryResult.parameters.address
-        // console.log("name is : ", name, "email is : ", email, "number is :", number, "address is : ", address)
         await doc.useServiceAccountAuth({
             client_email: service.client_email,
             private_key: service.private_key,
         });
         await doc.loadInfo(); // loads document properties and worksheets
         console.log(doc.title);
-        const sheet = doc.sheetsByIndex[1]; // or use doc.sheetsById[id] or doc.sheetsByTitle[title]
-
-        // const rows = await sheet.getRows(); // can pass in { limit, offset }
-        // read/write row values
-        // console.log("row is :",rows[0]);
+        const sheet = doc.sheetsByIndex[1];
         await sheet.loadCells('A1:E10'); // loads a range of cells
         console.log("cells are :", sheet.cellStats);
 
-        // const sheet = await doc.addSheet({ headerValues: ['name', 'email'] });
         await sheet.addRow({ "Name": name, "Email": email, "Number": number, "Address": address });
         agent.add(
             `Thank you ${name}, your order has been received, we will shortly confirm you the same via email/number `
         );
     }
-
-
-
-
-    // (async function() {
-    //     await doc.loadInfo();
-    //     const rows = await sheet.getRows(); // can pass in { limit, offset }
-    //     // read/write row values
-    //     console.log("row is :",rows[0].name);
-    //     console.log()
-    //   }());
-
-
-
 
     let intents = new Map();
     intents.set("Default Welcome Intent", Welcome);
