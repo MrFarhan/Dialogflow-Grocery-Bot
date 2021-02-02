@@ -12,168 +12,61 @@ const client = new dialogflow.SessionEntityTypesClient({
     keyFilename: "./credentials.json"
 });
 
-// productData.Quantity.items
-// const productData = {
-//     'Fruit_Vegetables': {
-//         trivia: {
-//             question1: 'kindly provide the quantity in KGs',
-//         },
-//         items: [
-//             { value: 'Apple', synonyms: ['apple'] },
-//             { value: 'Mango', synonyms: ['mango'] },
-//             { value: 'Orange', synonyms: ['Orange'] },
-//             { value: 'I want seafood', synonyms: ['Seafood'] },
-//         ],
-//     },
-//     'Deli': {
-//         trivia: {
-//             question: 'kindly provide the quantity and brand name if any you want',
-//             question2: 'kindly provide brand you want',
-//         },
-//         items: [
-//             { value: 'Deli', synonyms: ['Deli'] },
-//         ],
-//     },
-//     'Dairy': {
-//         trivia: {
-//             question: 'kindly provide the quantity in Pcs',
-//         },
-//         items: [
-//             { value: 'Milk', synonyms: ['Milk'] },
-//             { value: 'Yogurt ', synonyms: ['Yogurt'] }],
-//     },
-//     'Seafood': {
-//         trivia: {
-//             question: 'kindly provide brand, type, Size, Quantity and Flavor',
-//         },
-//         items: [
-//             { value: 'Fish', synonyms: ['Fish'] },
-//             { value: 'Prowns ', synonyms: ['Prowns'] }],
-//     },
-//     'Meat_Poultry': {
-//         trivia: {
-//             question: 'kindly provide the quantity',
-//         },
-//         items: [
-//             { value: 'Meat', synonyms: ['meat'] },
-//             { value: 'Beef', synonyms: ['Beef'] }
-//         ],
-//     },
-//     'Chocolates': {
-//         trivia: {
-//             question: 'kindly provide the quantity',
-//         },
-//         items: [
-//             { value: 'Dairy Milk', synonyms: ['Dairy Milk'] },
-//             { value: 'Munch ', synonyms: ['Munch'] },
-//             { value: 'Crunch', synonyms: ['Crunch'] }],
-//     }
-// };
-
 
 let DBdata = {
-    beverages: ["beverages", "code", "sting", "dew"],
-    Fruit_Vegetables: ["Fruit_Vegetables", "mango", "banana", "orange"],
-    Deli: ["Deli"],
-    Dairy: ["Dairy", "Milk", "Yougert"]
+    beverages: ["code", "sting", "dew"],
+    fruit_vegetables: ["mango", "banana", "orange"],
+    deli: ["deli"],
+    dairy: ["Yougert", "milk"]
 }
 
-// console.log(Object.values(DBdata))
-let data = []
-let dum = Object.values(DBdata)
-// console.log('dum', dum)
-// const h = dum.map((val, i) => {
-//     const n = val.map((res) => res)
-//     if(n)
-//     data.push(n)
-//     console.log("n", n)
-// }
-// )
-// console.log('h', data)
-let arr=dum.map((item, index) => {
-    // console.log(item)
-    //     let dus = []
-    //    dus = dus.concat(item)
-    //     console.log(dus)
-    // console.log("item is: ", item, "index is :", index)
-    // item.map((singleitem, index) => {
-    //     console.log("single item is: ", singleitem, "index is :", index, "item 0 index is: ", item[0])
-    // })
-    item.map((name, i) => {
-        let value = item[i + 1]
-        let synonyms = [item[i + 1]]
-        if (value)  data.push({
-            value: value,
-            synonyms: synonyms // synonyms looks like: ["geo fence group", "1", "1st", "first"]
-        })
+let userUterense = "Dairy"
+userUterense = userUterense.toLowerCase()
+console.log(userUterense)
+
+Object.entries(DBdata).map((item) => {
+    item.map((val1, index) => {
+        if (index) {
+            val1.map((val) => {
+                if (userUterense === val) {
+                    if (item[0] === "beverages") {
+                        console.log("beverage question here")
+                    }
+                    else if (item[0] === "fruit_vegetables") {
+                        console.log("Fruit_Vegetables question here")
+                    }
+                    else if (item[0] === "deli") {
+                        console.log("Deli question here")
+                    }
+                    else if (item[0] === "dairy") {
+                        console.log("Dairy question here")
+                    }
+
+                }
+            })
+        }
     })
 })
 
-console.log("arr : ",data)
-// convert each single item into 
-function senti(item) {
-
-    //  data
-    let dummy = []
-    let temp = Object.values(data)
-    // dummy = dummy.push(temp)
-    //  let dumy = temp.push(temp)
-    //  console.log(dumy)
-    // temp = temp.push(data)
-    // console.log("temp is :", dummy);
-    console.log(temp)
-}
-
-// console.log("dum is ", dum)
-// const productData = [
-//     // https://dialogflow.com/docs/reference/api-v2/rest/Shared.Types/BatchUpdateEntityTypesResponse#entity
-//     { value: 'fruits and vegitables', synonyms: ['fruits'] },
-//     { value: 'Deli ', synonyms: ['Deli'] },
-//     { value: 'Eggs', synonyms: ['Eggs'] },
-//     { value: 'Dairy', synonyms: ['Dairy'] },
-//     { value: 'I want seafood', synonyms: ['Seafood'] },
-// ]
 
 app.get("/", (request, response) => {
     response.send("Hello!");
 });
 
-
-
 app.post("/webhook", (request, response) => {
     const _agent = new WebhookClient({ request, response });
-    // let queryText = request.body.queryResult.queryText;
-    // console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
-    // console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
-
-    const data = DBdata;
     function Welcome(agent) {
-        // agent.add(
-        //     "Hi, welcome intent from webhook triggered"
-        // );
-        // Create a new SessionEntityTypesClient, which communicates with the SessionEntityTypes API endpoints. 
-        const client = new dialogflow.SessionEntityTypesClient({
-            keyFilename: "./credentials.json"
-        });
 
-        // Combine the session identifier with the name of the EntityType
-        // we want to override, which in this case is 'street'. This is
-        // according to the template in the docs:
-        // https://dialogflow.com/docs/reference/api-v2/rest/v2/projects.agent.sessions.entityTypes#SessionEntityType
         const sessionEntityTypeName = agent.session + '/entityTypes/test';
 
         // Define our new SessionEntityType.
         const sessionEntityType = {
             name: sessionEntityTypeName,
-            // Specify that this SessionEntityType's entities should fully replace
-            // any values in the underlying EntityType (street).
             entityOverrideMode: 'ENTITY_OVERRIDE_MODE_OVERRIDE',
-            // Add the appropriate streets to this SessionEntityType
             entities: data,
         };
 
-        // Build a request that includes the current session
-        // and the SessionEntityType.
+        // Build a request that includes the current session and the SessionEntityType.
         const request = {
             parent: agent.session,
             sessionEntityType: sessionEntityType,
@@ -183,8 +76,11 @@ app.post("/webhook", (request, response) => {
         return client
             .createSessionEntityType(request)
             .then((responses) => {
-                console.log('Successfully created session entity type:',
-                    JSON.stringify(request));
+                var entityqueryresult = JSON.stringify(request)
+                // console.log("responses is", request.sessionEntityType.entities[0][0].trivia) 
+                // console.log("responses is", responses[0]) //getting entities from here
+                // console.log('Successfully created session entities :',
+                //     JSON.stringify(request));
                 // Respond to the user and ask this city's trivia question
                 agent.add(`Hi, welcome intent from webhook triggered`);
             })
@@ -200,23 +96,15 @@ app.post("/webhook", (request, response) => {
      * 'City name' intent being matched.
      * @param {agent} agent Passed in by the Dialogflow fulfillment library.
      * @return {null} */
+
+
     function category(agent) {
-        const test = agent.parameters.test;
-
-
-        let DBdata = {
-            beverages: ["beverages", "code", "sting", "dew"],
-            Fruit_Vegetables: ["Fruit_Vegetables", "mango", "banana", "orange"],
-            Deli: ["Deli"],
-            Dairy: ["Milk", "Yougert"]
-        }
-
-
-        // Grab the name of the city from the parameters.
-        if (test === "fruits and vegitables")
+        const agentParams = agent.parameters.brand;
+        // condition to ask question 
+        if (agentParams === "Meat_Poultry")
             agent.add("You have selected fruits, kindly provide the quantity you want")
         else agent.add("kindly select a valid product")
-        console.log("brand   is : ", test)
+        console.log("brand is : ", agentParams)
     }
 
     /** Create a function that will handle our
@@ -230,15 +118,18 @@ app.post("/webhook", (request, response) => {
         const email = request.body.queryResult.parameters.email
         const number = request.body.queryResult.parameters.phoneNumber
         const address = request.body.queryResult.parameters.address
+
         await doc.useServiceAccountAuth({
             client_email: service.client_email,
             private_key: service.private_key,
         });
+
         await doc.loadInfo(); // loads document properties and worksheets
-        console.log(doc.title);
+        // console.log(doc.title);
+
         const sheet = doc.sheetsByIndex[1];
         await sheet.loadCells('A1:E10'); // loads a range of cells
-        console.log("cells are :", sheet.cellStats);
+        // console.log("cells are :", sheet.cellStats);
 
         await sheet.addRow({ "Name": name, "Email": email, "Number": number, "Address": address });
         agent.add(
