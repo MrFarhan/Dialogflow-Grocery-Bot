@@ -17,36 +17,53 @@ let DBdata = {
     beverages: ["code", "sting", "dew"],
     fruit_vegetables: ["mango", "banana", "orange"],
     deli: ["deli"],
-    dairy: ["Yougert", "milk"]
+    dairy: ["yougert", "milk"]
 }
+const data = Object.entries(DBdata)
 
-let userUterense = "Dairy"
-userUterense = userUterense.toLowerCase()
-console.log(userUterense)
+var entityData = []
+data.map((item, index) => {
 
-Object.entries(DBdata).map((item) => {
-    item.map((val1, index) => {
-        if (index) {
-            val1.map((val) => {
-                if (userUterense === val) {
-                    if (item[0] === "beverages") {
-                        console.log("beverage question here")
-                    }
-                    else if (item[0] === "fruit_vegetables") {
-                        console.log("Fruit_Vegetables question here")
-                    }
-                    else if (item[0] === "deli") {
-                        console.log("Deli question here")
-                    }
-                    else if (item[0] === "dairy") {
-                        console.log("Dairy question here")
-                    }
+    let value = item[0]
+    let synonyms = item[1]
 
-                }
-            })
-        }
+    entityData.push({
+        value: value,
+        synonyms: synonyms // synonyms looks like: ["geo fence group", "1", "1st", "first"]
     })
+    console.log("entity data is : ", entityData)
 })
+
+// console.log(entityData)
+// console.log(data)
+// console.log()
+// console.log(Object.entries(DBdata))
+// let userUterense = "Dairy"
+// userUterense = userUterense.toLowerCase()
+
+// Object.entries(DBdata).map((item) => {
+//     item.map((val1, index) => {
+//         if (index) {
+//             val1.map((val) => {
+//                 if (userUterense === val) {
+//                     if (item[0] === "beverages") {
+//                         console.log("beverage question here")
+//                     }
+//                     else if (item[0] === "fruit_vegetables") {
+//                         console.log("Fruit_Vegetables question here")
+//                     }
+//                     else if (item[0] === "deli") {
+//                         console.log("Deli question here")
+//                     }
+//                     else if (item[0] === "dairy") {
+//                         console.log("Dairy question here")
+//                     }
+
+//                 }
+//             })
+//         }
+//     })
+// })
 
 
 app.get("/", (request, response) => {
@@ -57,13 +74,13 @@ app.post("/webhook", (request, response) => {
     const _agent = new WebhookClient({ request, response });
     function Welcome(agent) {
 
-        const sessionEntityTypeName = agent.session + '/entityTypes/test';
+        const sessionEntityTypeName = agent.session + '/entityTypes/Brand';
 
         // Define our new SessionEntityType.
         const sessionEntityType = {
             name: sessionEntityTypeName,
             entityOverrideMode: 'ENTITY_OVERRIDE_MODE_OVERRIDE',
-            entities: data,
+            entities: entityData,
         };
 
         // Build a request that includes the current session and the SessionEntityType.
@@ -77,12 +94,13 @@ app.post("/webhook", (request, response) => {
             .createSessionEntityType(request)
             .then((responses) => {
                 var entityqueryresult = JSON.stringify(request)
-                // console.log("responses is", request.sessionEntityType.entities[0][0].trivia) 
-                // console.log("responses is", responses[0]) //getting entities from here
+                const dum = request.sessionEntityType.entities
+                // console.log("request  is", dum)
+                // console.log("agent is: ", agent)
                 // console.log('Successfully created session entities :',
                 //     JSON.stringify(request));
                 // Respond to the user and ask this city's trivia question
-                agent.add(`Hi, welcome intent from webhook triggered`);
+                agent.add(`Hi, I am your grocery assistant, how may i help you today`);
             })
             // Handle any errors by apologizing to the user.
             .catch((err) => {
@@ -98,13 +116,96 @@ app.post("/webhook", (request, response) => {
      * @return {null} */
 
 
-    function category(agent) {
-        const agentParams = agent.parameters.brand;
+    function WelcomCustom(agent) {
+        var agentParams = agent.parameters.Brand;
+        var beverages_unit = agent.parameters.beverages_unit;
+        console.log(agent.parameters.beverages_unit, "bevarage unit")
+        agentParams = agentParams.toLowerCase()
+
+
+
+        // console.log("agent     is : ", agent.context.contexts)
+        // var agent_context = agent.context;
+
+
+
+        if (agentParams === "beverages" && !beverages_unit) {
+            // agent.context.get('beverages')
+            return agent.add(`You have selected ${agentParams}, kindly confirm you want 300 Ml drink or 500 Ml ? `)
+        } else if (agentParams === "beverages" && beverages_unit) {
+            // agent.context.set({
+            //     'name': 'products',
+            //     'lifespan': 5,
+            //     'parameters': {
+            //         product: agent.parameters.City,
+            //     }
+            // });
+            return agent.add(`Your order of  ${agentParams} for ${JSON.stringify(beverages_unit)} has been received, you will shorly receive confirmation email/msg  `)
+        }
+        else if (agentParams === "fruit_vegetables") {
+            console.log("Fruit_Vegetables question here")
+            return agent.add("Kindly confirm you want 300 gram 500 grams")
+        }
+        else if (agentParams === "deli") {
+            console.log("Deli question here")
+            return agent.add("Deli question here")
+        }
+        else if (agentParams === "dairy") {
+            console.log("Dairy question here")
+            return agent.add("Dairy question here")
+        }
+        else {
+            console.log("else question here")
+            return agent.add("else question here")
+        }
+
+
+        //  Object.entries(DBdata).map((item) => {
+        //     item.map((val1, index) => {
+        //         if (index) {
+        //             val1.map((val) => {
+        //                 if (agentParams === val) {
+        //                     if (item[0] === "beverages") {
+        //                         console.log("beverage question here")
+        //                         return agent.add("beverage question here")
+        //                     }
+        //                     else if (item[0] === "fruit_vegetables") {
+        //                         console.log("Fruit_Vegetables question here")
+        //                         return agent.add("Fruit_Vegetables question here")
+        //                     }
+        //                     else if (item[0] === "deli") {
+        //                         console.log("Deli question here")
+        //                         return agent.add("Deli question here")
+        //                     }
+        //                     else if (item[0] === "dairy") {
+        //                         console.log("Dairy question here")
+        //                         return agent.add("Dairy question here")
+        //                     }
+
+        //                 }
+        //             })
+        // }
+        // })
+        // })
+
+
+
+        // if (agent.parameters.Brand){
+        // return agent.add("")
+        // }
+
+
+
         // condition to ask question 
-        if (agentParams === "Meat_Poultry")
-            agent.add("You have selected fruits, kindly provide the quantity you want")
-        else agent.add("kindly select a valid product")
-        console.log("brand is : ", agentParams)
+        // if (agentParams === "Meat_Poultry")
+        //     agent.add("You have selected fruits, kindly provide the quantity you want")
+        // else agent.add("kindly select a valid product")
+        // console.log("brand is : ", agentParams)
+
+
+
+
+
     }
 
     /** Create a function that will handle our
@@ -140,7 +241,10 @@ app.post("/webhook", (request, response) => {
     let intents = new Map();
     intents.set("Default Welcome Intent", Welcome);
     intents.set("check_out", check_out);
-    intents.set("category", category);
+    intents.set("Default Welcome Intent - custom", WelcomCustom);
+
+
+    // intents.set("category", category);
 
     _agent.handleRequest(intents);
 });
