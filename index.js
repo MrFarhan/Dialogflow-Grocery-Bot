@@ -13,13 +13,30 @@ const client = new dialogflow.SessionEntityTypesClient({
 });
 
 
+// (async function () {
+//     await doc.useServiceAccountAuth({
+//         client_email: service.client_email,
+//         private_key: service.private_key,
+//     });
+//     await doc.loadInfo(); // loads document properties and worksheets
+
+//     const sheet = doc.sheetsByIndex[0];
+//     const rows = await sheet.getRows(); // can pass in { limit, offset }
+
+//     console.log("row is : ", rows)
+// }());
+
+
+
+
 let DBdata = {
-    beverages: ["code", "sting", "dew"],
-    fruit_vegetables: ["mango", "banana", "orange"],
-    deli: ["deli"],
-    dairy: ["yougert", "milk"]
+    beverages: ["code", "sting", "dew", "coke"],
+    Butter_Margarine: ["mango", "banana", "orange"],
+
 }
+// console.log("DBdata", DBdata)
 const data = Object.entries(DBdata)
+// console.log("data", data)
 
 var entityData = []
 data.map((item, index) => {
@@ -31,39 +48,8 @@ data.map((item, index) => {
         value: value,
         synonyms: synonyms // synonyms looks like: ["geo fence group", "1", "1st", "first"]
     })
-    console.log("entity data is : ", entityData)
 })
-
-// console.log(entityData)
-// console.log(data)
-// console.log()
-// console.log(Object.entries(DBdata))
-// let userUterense = "Dairy"
-// userUterense = userUterense.toLowerCase()
-
-// Object.entries(DBdata).map((item) => {
-//     item.map((val1, index) => {
-//         if (index) {
-//             val1.map((val) => {
-//                 if (userUterense === val) {
-//                     if (item[0] === "beverages") {
-//                         console.log("beverage question here")
-//                     }
-//                     else if (item[0] === "fruit_vegetables") {
-//                         console.log("Fruit_Vegetables question here")
-//                     }
-//                     else if (item[0] === "deli") {
-//                         console.log("Deli question here")
-//                     }
-//                     else if (item[0] === "dairy") {
-//                         console.log("Dairy question here")
-//                     }
-
-//                 }
-//             })
-//         }
-//     })
-// })
+// console.log("entityData is ", entityData)
 
 
 app.get("/", (request, response) => {
@@ -74,7 +60,7 @@ app.post("/webhook", (request, response) => {
     const _agent = new WebhookClient({ request, response });
     function Welcome(agent) {
 
-        const sessionEntityTypeName = agent.session + '/entityTypes/Brand';
+        const sessionEntityTypeName = agent.session + '/entityTypes/product';
 
         // Define our new SessionEntityType.
         const sessionEntityType = {
@@ -95,18 +81,12 @@ app.post("/webhook", (request, response) => {
             .then((responses) => {
                 var entityqueryresult = JSON.stringify(request)
                 const dum = request.sessionEntityType.entities
-                // console.log("request  is", dum)
-                // console.log("agent is: ", agent)
-                // console.log('Successfully created session entities :',
-                //     JSON.stringify(request));
-                // Respond to the user and ask this city's trivia question
-                agent.add(`Hi, I am your grocery assistant, how may i help you today`);
+                agent.add(`Hi, I am your grocery assistant, how may i help you today - 1) Store Hours 2) Order food 3) Restaurent Info`);
             })
             // Handle any errors by apologizing to the user.
             .catch((err) => {
                 console.error('Error creating session entitytype: ', err);
                 agent.add(`I'm sorry, I can't get it .`);
-                // agent.add(`Is there a different city you'd like to be quizzed on?`);
             });
     }
 
@@ -116,41 +96,43 @@ app.post("/webhook", (request, response) => {
      * @return {null} */
 
 
-    function WelcomCustom(agent) {
-        var agentParams = agent.parameters.Brand;
-        var beverages_unit = agent.parameters.beverages_unit;
-        console.log(agent.parameters.beverages_unit, "bevarage unit")
-        agentParams = agentParams.toLowerCase()
+    async function WelcomCustom(agent) {
+
+        console.log("Actual product selected by user: ", agent.request_.body.queryResult.outputContexts[0].parameters["product.original"])
+        // console.log("complete query text by user : ", agent.request_.body.queryResult.queryText)
+        const actualProduct = agent.request_.body.queryResult.outputContexts[0].parameters["product.original"]
+        const product = agent.parameters.product;
+        const varient = agent.parameters.varient;
+        var contextProduct = await agent.context.get("product") ? agent.context.get("product").parameters.product : null
+        contextProduct = await agent.context.get("product") ? agent.context.get("product").parameters.product : null
 
 
-
-        // console.log("agent     is : ", agent.context.contexts)
-        // var agent_context = agent.context;
-
-
-
-        if (agentParams === "beverages" && !beverages_unit) {
-            // agent.context.get('beverages')
-            return agent.add(`You have selected ${agentParams}, kindly confirm you want 300 Ml drink or 500 Ml ? `)
-        } else if (agentParams === "beverages" && beverages_unit) {
-            // agent.context.set({
-            //     'name': 'products',
-            //     'lifespan': 5,
-            //     'parameters': {
-            //         product: agent.parameters.City,
-            //     }
-            // });
-            return agent.add(`Your order of  ${agentParams} for ${JSON.stringify(beverages_unit)} has been received, you will shorly receive confirmation email/msg  `)
+        if (product === "beverages" && !varient) {
+            console.log("1st condition product is : ", product, "varient is : ", varient)
+            agent.context.set({ name: 'product', lifespan: 5, parameters: { product: product, varient: varient } });
+            // const product = agent.context.get("product")
+            // product = product.parameters.product
+            return agent.add(`You have selected ${actualProduct} from ${product}, kindly confirm you want 300 Ml drink or 500 Ml ? `)
+        } else if (contextProduct === "beverages" && varient) {
+            agent.context.get("product")
+            console.log("2nd condition product is : ", contextProduct, "varient is : ", varient)
+            return (
+                agent.add(`Your order of  ${contextProduct} for ${varient} has been received, you will shorly receive confirmation email/msg.`),
+                agent.add(`Would you like to add any thing else in the chart ?`))
         }
-        else if (agentParams === "fruit_vegetables") {
+        else if (product === "fruit_vegetables") {
             console.log("Fruit_Vegetables question here")
             return agent.add("Kindly confirm you want 300 gram 500 grams")
         }
-        else if (agentParams === "deli") {
+        else if (product === "fruit_vegetables") {
+            console.log("Fruit_Vegetables question here")
+            return agent.add("Kindly confirm you want 300 gram 500 grams")
+        }
+        else if (product === "deli") {
             console.log("Deli question here")
             return agent.add("Deli question here")
         }
-        else if (agentParams === "dairy") {
+        else if (product === "dairy") {
             console.log("Dairy question here")
             return agent.add("Dairy question here")
         }
@@ -158,54 +140,6 @@ app.post("/webhook", (request, response) => {
             console.log("else question here")
             return agent.add("else question here")
         }
-
-
-        //  Object.entries(DBdata).map((item) => {
-        //     item.map((val1, index) => {
-        //         if (index) {
-        //             val1.map((val) => {
-        //                 if (agentParams === val) {
-        //                     if (item[0] === "beverages") {
-        //                         console.log("beverage question here")
-        //                         return agent.add("beverage question here")
-        //                     }
-        //                     else if (item[0] === "fruit_vegetables") {
-        //                         console.log("Fruit_Vegetables question here")
-        //                         return agent.add("Fruit_Vegetables question here")
-        //                     }
-        //                     else if (item[0] === "deli") {
-        //                         console.log("Deli question here")
-        //                         return agent.add("Deli question here")
-        //                     }
-        //                     else if (item[0] === "dairy") {
-        //                         console.log("Dairy question here")
-        //                         return agent.add("Dairy question here")
-        //                     }
-
-        //                 }
-        //             })
-        // }
-        // })
-        // })
-
-
-
-        // if (agent.parameters.Brand){
-        // return agent.add("")
-        // }
-
-
-
-        // condition to ask question 
-        // if (agentParams === "Meat_Poultry")
-        //     agent.add("You have selected fruits, kindly provide the quantity you want")
-        // else agent.add("kindly select a valid product")
-        // console.log("brand is : ", agentParams)
-
-
-
-
-
     }
 
     /** Create a function that will handle our
@@ -226,11 +160,9 @@ app.post("/webhook", (request, response) => {
         });
 
         await doc.loadInfo(); // loads document properties and worksheets
-        // console.log(doc.title);
 
         const sheet = doc.sheetsByIndex[1];
         await sheet.loadCells('A1:E10'); // loads a range of cells
-        // console.log("cells are :", sheet.cellStats);
 
         await sheet.addRow({ "Name": name, "Email": email, "Number": number, "Address": address });
         agent.add(
@@ -242,9 +174,6 @@ app.post("/webhook", (request, response) => {
     intents.set("Default Welcome Intent", Welcome);
     intents.set("check_out", check_out);
     intents.set("Default Welcome Intent - custom", WelcomCustom);
-
-
-    // intents.set("category", category);
 
     _agent.handleRequest(intents);
 });
